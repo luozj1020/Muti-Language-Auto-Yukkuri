@@ -27,17 +27,25 @@ Yukkuri Audio Converter 是一个功能强大的音频转换工具，能够将�
 
 ## 安装与使用
 
-### 依赖安装
+### 源代码调试
+
+首先从 (https://www.ffmpeg.org/download.html)[https://www.ffmpeg.org/download.html] 下载压缩包，解压后将 bin 文件夹下的 ffprobe.exe 和 ffmpeg.exe 放入 resources 文件夹
+
+安装依赖：
 
 ```
 pip install selenium webdriver_manager librosa soundfile pydub mutagen requests numpy
 ```
 
-### 运行程序
+运行程序：
 
 ```
 python main.py
 ```
+
+### 直接使用
+
+直接从仓库下载可执行文件即可
 
 ### 使用说明
 
@@ -95,5 +103,6 @@ python main.py
    - 转换失败记录详细日志
 
    - 用户可随时停止转换过程
+
 
 
