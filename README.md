@@ -64,6 +64,7 @@ python main.py
 ```
 │
 ├── main.py                  # 程序入口
+├── yukkuri_converter.spec   # pyinstaller 编译文件
 │
 ├── core/                    # 核心功能模块
 │   ├── audio_processor.py   # 音频处理（调整语速、音量等）
@@ -103,3 +104,4 @@ python main.py
    - 转换失败记录详细日志
 
    - 用户可随时停止转换过程
+
