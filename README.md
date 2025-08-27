@@ -35,15 +35,6 @@ pip install selenium webdriver_manager librosa soundfile pydub mutagen requests 
 
 ### 运行程序
 
-1. 克隆仓库：
-
-```
-git clone https://github.com/your-repo/yukkuri-audio-converter.git
-cd yukkuri-audio-converter
-```
-
-1. 运行主程序：
-
 ```
 python main.py
 ```
@@ -104,4 +95,5 @@ python main.py
    - 转换失败记录详细日志
 
    - 用户可随时停止转换过程
+
 
