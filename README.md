@@ -81,10 +81,8 @@ python main.py
 │   └── icon.png             # 程序图标（备用）
 │
 ├── services/                # 服务模块
-│   ├── text_processor.py    # 文本处理（片假名转换等）
-│   └── translation_service.py # 翻译服务
-│
-└── .idea/                   # IDE配置文件（可忽略）
+    ├── text_processor.py    # 文本处理（片假名转换等）
+    └── translation_service.py # 翻译服务
 ```
 
 ## 技术特点
@@ -103,4 +101,5 @@ python main.py
 4. **智能错误处理**：
    - 浏览器初始化失败自动重试
    - 转换失败记录详细日志
+
    - 用户可随时停止转换过程
