@@ -126,31 +126,60 @@ class TextProcessor:
         """将英文转换为片假名"""
         katakana_lines = []
         try:
-            log_callback("访问英文转片假名网站...")
+            log_callback("正在访问英文转片假名网站...")
+            wait = WebDriverWait(driver, 20)  # 修复：定义 wait 对象
 
             for i, line in enumerate(english_lines):
+
+                log_callback(f"转换第{i + 1}行英文: {line}")
+
                 driver.get("https://www.sljfaq.org/cgi/e2k_ja.cgi")
 
                 # 输入英文
-                input_field = WebDriverWait(driver, 20).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "#word-input"))
-                )
+                input_field = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#word-input")))
                 input_field.clear()
                 input_field.send_keys(line)
 
-                # 点击转换
+                # 点击转换按钮
                 submit_btn = driver.find_element(By.CSS_SELECTOR,
                                                  "#converter > form > table > tbody > tr:nth-child(4) > td.buttons > input[type=submit]:nth-child(1)")
                 submit_btn.click()
 
-                # 获取结果
-                katakana_element = WebDriverWait(driver, 20).until(
-                    EC.presence_of_element_located((By.XPATH, '//*[@id="katakana-string"]'))
-                )
-                katakana_text = katakana_element.text.strip()
+                # 添加重试机制解决空文本问题
+                max_retries = 5
+                retry_delay = 1
+                katakana_text = ""
+
+                for attempt in range(max_retries):
+                    try:
+                        # 获取片假名结果
+                        katakana_element = wait.until(
+                            EC.presence_of_element_located((By.XPATH, '//*[@id="katakana-string"]'))
+                        )
+                        katakana_text = katakana_element.text.strip()
+
+                        if katakana_text:
+                            break
+
+                        if attempt == max_retries - 1:
+                            log_callback(f"第{i + 1}行转换失败（尝试{max_retries}次后仍为空）")
+                            katakana_text = ""
+                    except Exception as e:
+                        log_callback(f"第{i + 1}行转换尝试时出错: {str(e)}")
+
+                    if not katakana_text and attempt < max_retries - 1:
+                        log_callback(f"第{i + 1}行转换结果为空，等待{retry_delay}秒后重试...")
+                        time.sleep(retry_delay)
+
+                        submit_btn = driver.find_element(By.CSS_SELECTOR,
+                                                         "#converter > form > table > tbody > tr:nth-child(4) > td.buttons > input[type=submit]:nth-child(1)")
+                        submit_btn.click()
+                        time.sleep(1)
 
                 if katakana_text:
+                    # 清理片假名文本（但保留"・"）
                     cleaned_katakana = self.clean_katakana_preserve_dots(katakana_text)
+                    # 修正标点符号
                     corrected_katakana = self.correct_katakana_punctuation(line, cleaned_katakana)
                     katakana_lines.append(corrected_katakana)
                     log_callback(f"第{i + 1}行转换成功: {corrected_katakana}")
