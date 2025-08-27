@@ -34,7 +34,7 @@ Yukkuri Audio Converter 是一个功能强大的音频转换工具，能够将�
 安装依赖：
 
 ```
-pip install selenium webdriver_manager librosa soundfile pydub mutagen requests numpy
+pip install selenium webdriver_manager librosa soundfile pydub mutagen requests numpy resampy
 ```
 
 运行程序：
@@ -103,6 +103,7 @@ python main.py
    - 转换失败记录详细日志
 
    - 用户可随时停止转换过程
+
 
 
 
