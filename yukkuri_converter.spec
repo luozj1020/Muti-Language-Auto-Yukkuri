@@ -60,6 +60,7 @@ a = Analysis(
         'tkinter.filedialog',
         'tkinter.messagebox',
         'tkinter.scrolledtext'
+        'resampy'
     ] +
     # 动态收集可能遗漏的子模块
     collect_submodules('selenium') +
