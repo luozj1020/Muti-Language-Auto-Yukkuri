@@ -54,7 +54,9 @@ class ConversionEngine:
                 )
             elif mode == "英文Yukkuri":
                 katakana_lines = self.text_processor.convert_english_to_katakana(
-                    driver, original_lines, params["log_callback"]
+                    driver,
+                    original_lines,
+                    params["log_callback"]  # Add log_callback argument
                 )
             elif mode == "日文Yukkuri":
                 katakana_lines = original_lines
