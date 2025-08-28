@@ -71,15 +71,24 @@ class ConversionEngine:
                 params["log_callback"]("错误: 无法获取有效的片假名文本")
                 return
 
-            # 下载音频
+            # 下载音频（但不立即生成LRC）
             downloaded_audio_files = self.download_audio_files(
                 driver, katakana_lines, original_lines, params
             )
 
-            # 生成LRC文件
-            if params["generate_lrc"] and downloaded_audio_files:
+            # 等待所有音频处理完成（关键修复点）
+            processed_audio_files = []
+            for audio_file in downloaded_audio_files:
+                # 确保音频已处理完成
+                while not os.path.exists(audio_file) or os.path.getsize(audio_file) == 0:
+                    time.sleep(0.5)
+                processed_audio_files.append(audio_file)
+                params["log_callback"](f"已确认音频处理完成: {os.path.basename(audio_file)}")
+
+            # 现在所有音频都已处理完毕，生成LRC文件
+            if params["generate_lrc"] and processed_audio_files:
                 self.generate_lrc_files(
-                    original_lines, downloaded_audio_files,
+                    original_lines, processed_audio_files,
                     japanese_lines, mode, params
                 )
 

@@ -99,6 +99,12 @@ class AudioProcessor:
                     y, sr, speed, volume, pitch, log_callback
                 )
 
+            # === 关键修复1: 增加峰值保护 ===
+            max_val = np.max(np.abs(processed_audio))
+            if max_val > 0.95:
+                processed_audio = processed_audio * (0.95 / max_val)
+                log_callback("应用峰值保护防止削波")
+
             # 保存为高质量临时文件
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
                 temp_path = temp_file.name
@@ -132,11 +138,10 @@ class AudioProcessor:
             pitch_factor = pitch / 100.0
             semitones = 12 * math.log2(pitch_factor)
 
-            # 使用更高质量的音程调整算法
+            # === 关键修复2: 移除不兼容的res_type参数 ===
             processed = librosa.effects.pitch_shift(
                 processed, sr=sr, n_steps=semitones,
-                bins_per_octave=24,  # 更高精度
-                res_type='kaiser_best'  # 高质量重采样
+                bins_per_octave=24  # 更高精度
             )
             log_callback(f"音程调整完成: {pitch}% ({semitones:.2f} 半音)")
 
@@ -145,11 +150,10 @@ class AudioProcessor:
             speed_factor = speed / 100.0
             rate_factor = 1.0 / speed_factor  # 速度快则拉伸因子小
 
-            # 使用高质量的时间拉伸算法
+            # === 关键修复3: 移除不兼容的res_type参数 ===
             processed = librosa.effects.time_stretch(
                 processed, rate=rate_factor,
-                hop_length=512,  # 更小的hop length提高质量
-                res_type='kaiser_best'
+                hop_length=512  # 更小的hop length提高质量
             )
             log_callback(f"语速调整完成: {speed}%")
 
@@ -165,10 +169,7 @@ class AudioProcessor:
 
             log_callback(f"音量调整完成: {volume}%")
 
-        # 4. 音频质量增强
-        processed = self._enhance_audio_quality(processed, sr, log_callback)
-
-        return processed
+        return processed  # 注意：移除了可能影响静音部分的增强处理
 
     def _apply_soft_limiter(self, audio, threshold=0.95, ratio=0.1):
         """应用软限制器防止削波"""
@@ -181,34 +182,6 @@ class AudioProcessor:
 
         # 应用限制，保持原始符号
         audio[mask] = np.sign(audio[mask]) * limited_excess
-
-        return audio
-
-    def _enhance_audio_quality(self, audio, sr, log_callback):
-        """音频质量增强"""
-        try:
-            # 轻微的去噪处理
-            if len(audio) > sr:  # 只对长于1秒的音频进行处理
-                # 使用spectral gating进行轻微去噪
-                stft = librosa.stft(audio, hop_length=512)
-                magnitude = np.abs(stft)
-
-                # 计算谱门限
-                spectral_mean = np.mean(magnitude, axis=1, keepdims=True)
-                gate_threshold = 0.1 * spectral_mean
-
-                # 应用温和的门限
-                gated_magnitude = np.where(magnitude > gate_threshold,
-                                           magnitude, magnitude * 0.5)
-
-                # 重构音频
-                phase = np.angle(stft)
-                enhanced_stft = gated_magnitude * np.exp(1j * phase)
-                audio = librosa.istft(enhanced_stft, hop_length=512)
-
-                log_callback("应用音频增强处理")
-        except:
-            pass  # 增强失败不影响主流程
 
         return audio
 
@@ -239,9 +212,6 @@ class AudioProcessor:
             # 3. 音量调整（改进的动态范围处理）
             if volume != 100:
                 audio = self.adjust_volume_enhanced(audio, volume, log_callback)
-
-            # 4. 音频后处理
-            audio = self.post_process_audio(audio, log_callback)
 
             # 保存处理后的文件
             processed_path = file_path.replace(".mp3", "_processed.mp3")
@@ -339,24 +309,6 @@ class AudioProcessor:
 
         log_callback(f"音量调整完成: {volume}%")
         return result
-
-    def post_process_audio(self, audio, log_callback):
-        """音频后处理：轻微增强"""
-        try:
-            # 应用轻微的动态范围优化
-            if audio.max_possible_amplitude > 0:
-                # 标准化但保留动态范围
-                normalized = audio.normalize(headroom=1.0)  # 保留1dB头空间
-
-                # 轻微的EQ增强（如果需要）
-                # 这里可以添加更多的后处理逻辑
-
-                log_callback("应用音频后处理")
-                return normalized
-        except:
-            pass
-
-        return audio
 
     def _convert_to_final_format(self, temp_path, output_path, log_callback):
         """转换为最终格式"""
