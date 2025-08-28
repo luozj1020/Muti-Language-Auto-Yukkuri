@@ -1,4 +1,4 @@
-# Yukkuri Audio Converter - 多语言音频转换工具
+# Yukkuri Audio Converter - 多语言油库里音频转换工具
 
 ## 概述
 
@@ -103,6 +103,7 @@ python main.py
    - 转换失败记录详细日志
 
    - 用户可随时停止转换过程
+
 
 
 
